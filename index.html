@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            touch-action: manipulation;
+        }
+        #game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #controls {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #controls div {
+            display: flex;
+            justify-content: center;
+        }
+        .control {
+            width: 60px;
+            height: 60px;
+            font-size: 32px;
+            margin: 5px;
+        }
+        #start-screen {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="start-screen">
+    <h1>Snake Game</h1>
+    <button id="start-button" class="control">Start</button>
+</div>
+<div id="game-container">
+    <canvas id="game-board" width="400" height="400"></canvas>
+    <div id="controls">
+        <button id="up" class="control">&#8593;</button>
+        <div>
+            <button id="left" class="control">&#8592;</button>
+            <button id="right" class="control">&#8594;</button>
+        </div>
+        <button id="down" class="control">&#8595;</button>
+    </div>
+</div>
+<script>
+const startButton = document.getElementById('start-button');
+const startScreen = document.getElementById('start-screen');
+const gameContainer = document.getElementById('game-container');
+const canvas = document.getElementById('game-board');
+const ctx = canvas.getContext('2d');
+const gridSize = 20;
+const tileCount = canvas.width / gridSize;
+let snake = [{x:10, y:10}];
+let velocity = {x:1, y:0};
+let food = {x:15, y:15};
+let gameInterval;
+
+function startGame() {
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'flex';
+    document.addEventListener('keydown', handleKey);
+    ['up','down','left','right'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => handleDir(id));
+    });
+    gameInterval = setInterval(gameLoop, 150);
+}
+
+function handleDir(dir) {
+    if(dir === 'up' && velocity.y === 0) { velocity = {x:0, y:-1}; }
+    if(dir === 'down' && velocity.y === 0) { velocity = {x:0, y:1}; }
+    if(dir === 'left' && velocity.x === 0) { velocity = {x:-1, y:0}; }
+    if(dir === 'right' && velocity.x === 0) { velocity = {x:1, y:0}; }
+}
+
+function handleKey(e) {
+    const keyMap = {ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right'};
+    if(keyMap[e.key]) handleDir(keyMap[e.key]);
+}
+
+function gameLoop() {
+    const head = {x: snake[0].x + velocity.x, y: snake[0].y + velocity.y};
+    if(head.x < 0 || head.y < 0 || head.x >= tileCount || head.y >= tileCount || snake.some(s => s.x === head.x && s.y === head.y)) {
+        clearInterval(gameInterval);
+        alert('Game Over');
+        location.reload();
+        return;
+    }
+    snake.unshift(head);
+    if(head.x === food.x && head.y === food.y) {
+        placeFood();
+    } else {
+        snake.pop();
+    }
+    draw();
+}
+
+function placeFood() {
+    food = {x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount)};
+    if(snake.some(s => s.x === food.x && s.y === food.y)) placeFood();
+}
+
+function draw() {
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+
+    ctx.fillStyle = 'green';
+    snake.forEach(s => ctx.fillRect(s.x * gridSize, s.y * gridSize, gridSize-2, gridSize-2));
+
+    ctx.fillStyle = 'red';
+    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize-2, gridSize-2);
+}
+
+startButton.addEventListener('click', startGame);
+</script>
+</body>
+</html>
