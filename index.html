@@ -93,8 +93,10 @@ function handleKey(e) {
 }
 
 function gameLoop() {
-    const head = {x: snake[0].x + velocity.x, y: snake[0].y + velocity.y};
-    if(head.x < 0 || head.y < 0 || head.x >= tileCount || head.y >= tileCount || snake.some(s => s.x === head.x && s.y === head.y)) {
+    let head = {x: snake[0].x + velocity.x, y: snake[0].y + velocity.y};
+    head.x = (head.x + tileCount) % tileCount;
+    head.y = (head.y + tileCount) % tileCount;
+    if(snake.some(s => s.x === head.x && s.y === head.y)) {
         clearInterval(gameInterval);
         alert('Game Over');
         location.reload();
